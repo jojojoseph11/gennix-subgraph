@@ -1,4 +1,4 @@
-# Compound-V2-subgraph
+# Gennix-subgraph
 
 [Compound](https://compound.finance/) is an open-source protocol for algorithmic, efficient Money Markets on the Ethereum blockchain. This Subgraph ingests the V2 contracts of the protocol.
 
