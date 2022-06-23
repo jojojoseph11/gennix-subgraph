@@ -1,6 +1,23 @@
 # Gennix-subgraph
 
-[Compound](https://compound.finance/) is an open-source protocol for algorithmic, efficient Money Markets on the Ethereum blockchain. This Subgraph ingests the V2 contracts of the protocol.
+[Gennix](https://gennix.io/) is an open-source protocol for algorithmic, efficient Money Markets on the Ethereum blockchain. This Subgraph ingests the V2 contracts of the protocol.
+
+# Gennix
+
+Deploy URL : https://thegraph.com/hosted-service/subgraph/jojojoseph11/gennixv5
+
+`yarn`
+
+Generate the subgraph
+
+`yarn codegen`
+
+Intialize the subgraph and authenticate
+
+`graph auth --product hosted-service 5889ab7917634709aa1e94fbe46b8e91`
+
+Deploy the subgraph
+`graph deploy --product hosted-service jojojoseph11/gennixv5`
 
 ## Networks and Performance
 

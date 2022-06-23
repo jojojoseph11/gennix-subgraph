@@ -105,7 +105,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "cUsdcAddress",
+    "name": "cUsdtAddress",
     "outputs": [
       {
         "name": "",
@@ -131,7 +131,7 @@
         "type": "address"
       },
       {
-        "name": "cUsdcAddress_",
+        "name": "cUsdtAddress_",
         "type": "address"
       },
       {

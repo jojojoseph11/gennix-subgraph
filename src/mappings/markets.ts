@@ -18,9 +18,9 @@ import {
   zeroBD,
 } from './helpers'
 
-let cUSDCAddress = '0x39aa39c021dfbae8fac545936693ac917d5e7563'
-let cETHAddress = '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5'
-let daiAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
+let cUSDTAddress = '0x27eff5269c3a5187c67ab990010d0d87aad3765e'
+let cETHAddress = '0x7836A1cfd01a994829e17DF0bF11dD7F9d820c82'
+//let daiAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
 
 // Used for all cERC20 contracts
 function getTokenPrice(
@@ -32,7 +32,9 @@ function getTokenPrice(
   let comptroller = Comptroller.load('1')
   let oracleAddress = comptroller.priceOracle as Address
   let underlyingPrice: BigDecimal
-  let priceOracle1Address = Address.fromString('02557a5e05defeffd4cae6d83ea3d173b272c904')
+  let priceOracle1Address = Address.fromString(
+    '0xdDcb492Fe8F8e2726f8Ed90f9abb3588219Eac31',
+  )
 
   /* PriceOracle2 is used at the block the Comptroller starts using it.
    * see here https://etherscan.io/address/0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b#events
@@ -78,27 +80,29 @@ function getTokenPrice(
 }
 
 // Returns the price of USDC in eth. i.e. 0.005 would mean ETH is $200
-function getUSDCpriceETH(blockNumber: i32): BigDecimal {
+function getUSDTpriceETH(blockNumber: i32): BigDecimal {
   let comptroller = Comptroller.load('1')
   let oracleAddress = comptroller.priceOracle as Address
-  let priceOracle1Address = Address.fromString('02557a5e05defeffd4cae6d83ea3d173b272c904')
-  let USDCAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 '
+  let priceOracle1Address = Address.fromString(
+    '0xdDcb492Fe8F8e2726f8Ed90f9abb3588219Eac31',
+  )
+  let USDTAddress = '0x55d398326f99059ff775485246999027b3197955 '
   let usdPrice: BigDecimal
 
   // See notes on block number if statement in getTokenPrices()
   if (blockNumber > 7715908) {
     let oracle2 = PriceOracle2.bind(oracleAddress)
-    let mantissaDecimalFactorUSDC = 18 - 6 + 18
-    let bdFactorUSDC = exponentToBigDecimal(mantissaDecimalFactorUSDC)
-    let tryPrice = oracle2.try_getUnderlyingPrice(Address.fromString(cUSDCAddress))
+    let mantissaDecimalFactorUSDT = 18 - 6 + 18
+    let bdFactorUSDT = exponentToBigDecimal(mantissaDecimalFactorUSDT)
+    let tryPrice = oracle2.try_getUnderlyingPrice(Address.fromString(cUSDTAddress))
 
     usdPrice = tryPrice.reverted
       ? zeroBD
-      : tryPrice.value.toBigDecimal().div(bdFactorUSDC)
+      : tryPrice.value.toBigDecimal().div(bdFactorUSDT)
   } else {
     let oracle1 = PriceOracle.bind(priceOracle1Address)
     usdPrice = oracle1
-      .getPrice(Address.fromString(USDCAddress))
+      .getPrice(Address.fromString(USDTAddress))
       .toBigDecimal()
       .div(mantissaFactorBD)
   }
@@ -126,16 +130,16 @@ export function createMarket(marketAddress: string): Market {
     market.underlyingAddress = contract.underlying()
     let underlyingContract = ERC20.bind(market.underlyingAddress as Address)
     market.underlyingDecimals = underlyingContract.decimals()
-    if (market.underlyingAddress.toHexString() != daiAddress) {
-      market.underlyingName = underlyingContract.name()
-      market.underlyingSymbol = underlyingContract.symbol()
-    } else {
-      market.underlyingName = 'Dai Stablecoin v1.0 (DAI)'
-      market.underlyingSymbol = 'DAI'
-    }
+    // if (market.underlyingAddress.toHexString() != daiAddress) {
+    //   market.underlyingName = underlyingContract.name()
+    //   market.underlyingSymbol = underlyingContract.symbol()
+    // } else {
+    //   market.underlyingName = 'Dai Stablecoin v1.0 (DAI)'
+    //   market.underlyingSymbol = 'DAI'
+    // }
     market.underlyingPriceUSD = zeroBD
     market.underlyingPrice = zeroBD
-    if (marketAddress == cUSDCAddress) {
+    if (marketAddress == cUSDTAddress) {
       market.underlyingPriceUSD = BigDecimal.fromString('1')
     }
   }
@@ -213,12 +217,12 @@ export function updateMarket(
           .div(ethPriceInUSD)
           .truncate(market.underlyingDecimals)
         // if USDC, we only update ETH price
-        if (market.id != cUSDCAddress) {
+        if (market.id != cUSDTAddress) {
           market.underlyingPriceUSD = tokenPriceUSD.truncate(market.underlyingDecimals)
         }
       }
     } else {
-      let usdPriceInEth = getUSDCpriceETH(blockNumber)
+      let usdPriceInEth = getUSDTpriceETH(blockNumber)
 
       // if cETH, we only update USD price
       if (market.id == cETHAddress) {
@@ -233,8 +237,8 @@ export function updateMarket(
           market.underlyingDecimals,
         )
         market.underlyingPrice = tokenPriceEth.truncate(market.underlyingDecimals)
-        // if USDC, we only update ETH price
-        if (market.id != cUSDCAddress) {
+        // if USDT, we only update ETH price
+        if (market.id != cUSDTAddress) {
           market.underlyingPriceUSD = market.underlyingPrice
             .div(usdPriceInEth)
             .truncate(market.underlyingDecimals)
@@ -252,8 +256,8 @@ export function updateMarket(
     /* Exchange rate explanation
        In Practice
         - If you call the cDAI contract on etherscan it comes back (2.0 * 10^26)
-        - If you call the cUSDC contract on etherscan it comes back (2.0 * 10^14)
-        - The real value is ~0.02. So cDAI is off by 10^28, and cUSDC 10^16
+        - If you call the cUSDT contract on etherscan it comes back (2.0 * 10^14)
+        - The real value is ~0.02. So cDAI is off by 10^28, and cUSDT 10^16
        How to calculate for tokens with different decimals
         - Must div by tokenDecimals, 10^market.underlyingDecimals
         - Must multiply by ctokenDecimals, 10^8
